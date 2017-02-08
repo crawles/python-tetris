@@ -80,7 +80,7 @@ class Tetris(object):
             if all(col == 1 for col in row):
                 lines_cleared += 1
                 self.board.pop()
-                self.board.insert(0, [0 for _ in range(10)])
+                self.board.insert(0, [0 for _ in range(self.number_of_cols)])
 
         if lines_cleared:
             self.total_lines += lines_cleared
