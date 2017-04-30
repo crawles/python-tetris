@@ -1,6 +1,5 @@
 from tetromino import Tetromino
 from time import sleep
-import json
 import os
 import sys
 from random import randrange
@@ -12,7 +11,7 @@ import numpy as np
 
 ActionReport = namedtuple("ActionReport", "state done score score_from_action did_perform_move")
 
-class Tetris(object):   
+class Tetris(object):
     def __init__(self, number_of_rows=16, number_of_cols=10):
         self.number_of_rows = number_of_rows
         self.number_of_cols = number_of_cols
@@ -27,14 +26,27 @@ class Tetris(object):
         self.is_running = True
 
     def empty_board(self):
-        board = []
-        for y in range(self.number_of_rows):
-            row = []
-            for x in range(self.number_of_cols):
-                row.append(0)
-            board.append(row)
+        return np.zeros([self.number_of_rows, self.number_of_cols])
 
-        return board
+    def combine_game_state(self):
+        piece_indices = []
+        for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
+            for col_i, col in enumerate(row):
+                if col == 1:
+                    piece_indices.append((col_i + self.piece.x, row_i + self.piece.y))
+
+        combined_state=[]
+        for row_i, row in enumerate(self.board):
+            combined_row = []
+            for col_i, col in enumerate(row):
+                if (col_i, row_i) in piece_indices:
+                    combined_row.append(1)
+                else:
+                    combined_row.append(col)
+
+            combined_state.append(combined_row)
+
+        return combined_state
 
     def print_board(self):
         output = ""
@@ -54,32 +66,10 @@ class Tetris(object):
 
         return output
 
-    def combine_game_state(self):
-        piece_indices = []
-        for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
-            for col_i, col in enumerate(row):
-                if col == 1:
-                    piece_indices.append((col_i + self.piece.x, row_i + self.piece.y))
-
-        combined_state=[]
-        for row_i, row in enumerate(self.board):
-            combined_row = []
-            for col_i, col in enumerate(row):
-                if (col_i, row_i) in piece_indices:
-                    #combined_row.append(self.piece.shape)
-                    combined_row.append(1)
-                else:
-                    combined_row.append(col)
-
-            combined_state.append(combined_row)
-
-        return combined_state
-
     def freeze_current_piece(self):
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
             for col_i, col in enumerate(row):
                 if col == 1:
-                    #self.board[row_i + self.piece.y][col_i + self.piece.x] = self.piece.shape
                     self.board[row_i + self.piece.y][col_i + self.piece.x] = 1
 
         lines_cleared = 0
@@ -220,8 +210,8 @@ if __name__ == "__main__":
     ]
     for _ in range(50000):
         for move in moves:
-            print game.print_board()
-            print str.format("\n\n\nlines: {0}", game.total_lines)
+            print(game.print_board())
+            print(str.format("\n\n\nlines: {0}", game.total_lines))
             sleep(0.05)
 
             next_move = move
